@@ -53,6 +53,7 @@ Examples:
 
 ### General
 
+- (optional): `GHWIKINOTIFIER_GITHUB_TOKEN`:  [Auth Token](https://developer.github.com/v3/oauth_authorizations/#create-a-new-authorizationif) (`repo` scope required) if you have to use https protocol to clone private repository
 - (optional) `GHWIKINOTIFIER_WEBHOOK_PAYLOAD`: Stringified json of  [GitHub Webhook payload](https://developer.github.com/v3/activity/events/types/#gollumevent) (ex. `GHWIKINOTIFIER_WEBHOOK_PAYLOAD=jq . /path/to/json`)
 
 ### HipChat
