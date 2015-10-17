@@ -34,4 +34,3 @@ npm install --save github-wiki-notifier
 [codecov-image]: https://img.shields.io/codecov/c/github/moqada/github-wiki-notifier.svg?style=flat-square
 [license-url]: http://opensource.org/licenses/MIT
 [license-image]: https://img.shields.io/npm/l/github-wiki-notifier.svg?style=flat-square
->>>>>>> Initial commit
