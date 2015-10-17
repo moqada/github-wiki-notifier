@@ -1,23 +1,22 @@
-import path from 'path';
-
 import git from 'simple-git';
-import escapeHtml from 'escape-html';
+
+import * as env from './utils/env';
 
 
 /**
  * Clone Repository
  *
  * @param {string} repoPath repository path
- * @param {string} localPath local path for clone
+ * @param {string} cloneDir local path for clone
  * @return {Promise}
  */
-export function cloneRepo(repoPath, localPath) {
+export function cloneRepo(repoPath, cloneDir) {
   return new Promise((resolve, reject) => {
-    git().clone(path.resolve(repoPath), localPath, err => {
+    git().clone(repoPath, cloneDir, err => {
       if (err) {
         reject(err);
       } else {
-        resolve({repo: git(localPath)});
+        resolve({repo: git(cloneDir)});
       }
     });
   });
@@ -25,15 +24,26 @@ export function cloneRepo(repoPath, localPath) {
 
 
 /**
+ * Get Repository name from remote path
+ *
+ * @param {string} repoPath repository path
+ * @return {string}
+ */
+export function getRepoNameFromRemotePath(repoPath) {
+  return repoPath.split('/').slice(-1)[0].split('.git')[0];
+}
+
+
+/**
  * Get Repository
  *
  * @param {string} repoPath repository path
- * @param {string} localPath local path for clone
+ * @param {string} cloneDir local path for clone
  * @return {Promise}
  */
-export function getRepo(repoPath, {localPath = './'} = {}) {
+export function getRepo(repoPath, {cloneDir} = {}) {
   if (/^(?:(?:https?|ftps?|ssh|git|rsync):\/\/)/.test(repoPath)) {
-    return cloneRepo(repoPath, localPath);
+    return cloneRepo(repoPath, cloneDir || getRepoNameFromRemotePath(repoPath));
   }
   return new Promise(resolve => {
     resolve({repo: git(repoPath)});
@@ -73,29 +83,34 @@ export function getDiff(repo, ...opts) {
  */
 export function getDiffPages(repo, ...pages) {
   return Promise.all(pages.map(page => {
-    return getDiff(repo, `HEAD~1`).then(diff => ({page, diff}));
+    return getDiff(repo, `${page.sha}~1`).then(diff => ({page, diff}));
   }));
 }
 
 
 /**
- * Convert Diff string to HTML
+ * Get remote repository path from payload object
  *
- * @param {string} diffString diff string
+ * @param {Object} [payload] GitHub Webhook payload
  * @return {string}
  */
-export function formatDifftoHTML(diffString) {
-  return diffString.split('\n').map(line => {
-    const escaped = escapeHtml(line);
-    if (line.indexOf('-') === 0) {
-      return `<span style="color:red">${escaped}</span>`;
-    } else if (line.indexOf('+') === 0) {
-      return `<span style="color:green">${escaped}</span>`;
-    } else if (line.indexOf('diff') === 0) {
-      return `<strong>${escaped}</strong>`;
-    } else if (/^(?:index|@)/.test(line)) {
-      return `<span style="color:gray">${escaped}</span>`;
-    }
-    return escaped;
-  }).join('\n');
+export function getRepoPathFromPayload(payload) {
+  const repo = payload.repository;
+
+  /**
+   * @param {string} url repository path
+   * @return {string}
+   */
+  function replace(url) {
+    return url.replace(/\.git$/, '.wiki.git');
+  }
+
+  if (!repo.private) {
+    return replace(repo.clone_url);
+  }
+  const token = env.get('GITHUB_TOKEN');
+  if (token) {
+    return replace(`https://${token}:@${repo.clone_url.split('https://')[0]}`);
+  }
+  return replace(repo.ssh_url);
 }

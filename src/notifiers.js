@@ -1,3 +1,3 @@
-import hipchat from './notifiers/hipchat';
+import HipChatNotifier from './notifiers/HipChatNotifier';
 
-export {hipchat};
+export const hipchat = HipChatNotifier;

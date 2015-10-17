@@ -8,10 +8,11 @@
     "url": "https://github.com/moqada/github-wiki-notifier/issues"
   },
   "dependencies": {
+    "chalk": "^1.1.1",
     "escape-html": "^1.0.3",
-    "git-utils": "^4.0.5",
     "hipchatter": "^0.2.0",
     "simple-git": "^1.11.0",
+    "update-notifier": "^0.5.0",
     "yargs": "^3.27.0"
   },
   "devDependencies": {
