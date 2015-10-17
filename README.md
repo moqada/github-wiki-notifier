@@ -8,7 +8,7 @@
 [![DevDependency Status][daviddm-dev-image]][daviddm-dev-url]
 [![License][license-image]][license-url]
 
-Notify diff when edited GitHub wiki
+Notify diff when edited GitHub Wiki
 
 
 ## Installation
