@@ -61,6 +61,12 @@ Examples:
 - (require) `GHWIKINOTIFIER_HIPCHAT_TOKEN`: HipChat Admin token
 - (require) `GHWIKINOTIFIER_HIPCHAT_ROOM_TOKEN`: HipChat notify token
 
+
+## Todo
+
+- [ ] Add tests
+- [ ] Add pluggable notifier
+
 [npm-url]: https://www.npmjs.com/package/github-wiki-notifier
 [npm-image]: https://img.shields.io/npm/v/github-wiki-notifier.svg?style=flat-square
 [npm-download-url]: https://www.npmjs.com/package/github-wiki-notifier
