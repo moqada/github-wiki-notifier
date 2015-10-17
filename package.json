@@ -1,6 +1,6 @@
 {
   "name": "github-wiki-notifier",
-  "description": "Notify diff of GitHub Wiki from [GitHub Webhook payload",
+  "description": "Notify diff of GitHub Wiki from GitHub Webhook payload",
   "version": "0.1.0",
   "author": "moqada <moqada@gmail.com>",
   "bin": "lib/cli.js",
