@@ -48,6 +48,8 @@ Examples:
   github-wiki-notifier hipchat                             Notify to HipChat from payload string of environment variable
 ```
 
+More detail, See [Doc](https://moqada.github.io/github-wiki-notifier/).
+
 
 ## Configuration
 
