@@ -8,17 +8,58 @@
 [![DevDependency Status][daviddm-dev-image]][daviddm-dev-url]
 [![License][license-image]][license-url]
 
-Notify diff when edited GitHub Wiki
+
+Notify diff of GitHub Wiki from [GitHub Webhook payload](https://developer.github.com/v3/activity/events/types/#gollumevent).
 
 
 ## Installation
 
 ```
-npm install --save github-wiki-notifier
+npm install -g github-wiki-notifier
 ```
 
 
 ## Usage
+
+```
+Usage: github-wiki-notifier <notifier>
+                            [--paylod=<path>]
+                            [--repository=<path>]
+                            [--clone-dir=<path>]
+                            [--max-message-length=<number>]
+                            [--dry-run]
+                            [--output-message]
+
+Notify diff of GitHub wiki to Chat
+
+Options:
+  -p, --payload         Set path to GitHub Webhook payload for gollum  [string]
+  -r, --repository      Set path to repository  [string]
+  -c, --clone-dir       Set path to cloning remote repository [default: ./<repo>]  [string]
+  --max-message-length  Set max length of message for contains diff
+  --dry-run             Set flag to disable notify  [boolean]
+  --output-message      Set flag to output notify message  [boolean]
+  --help                Show help  [boolean]
+  --version             Show version number  [boolean]
+
+Examples:
+  github-wiki-notifier hipchat --payload=/path/to/json     Notify to HipChat from payload file in local
+  github-wiki-notifier hipchat --repository=/path/to/repo  Notify latest diff to HipChat from repo in local
+  github-wiki-notifier hipchat                             Notify to HipChat from payload string of environment variable
+```
+
+
+## Configuration
+
+### General
+
+- (optional) `GHWIKINOTIFIER_WEBHOOK_PAYLOAD`: Stringified json of  [GitHub Webhook payload](https://developer.github.com/v3/activity/events/types/#gollumevent) (ex. `GHWIKINOTIFIER_WEBHOOK_PAYLOAD=jq . /path/to/json`)
+
+### HipChat
+
+- (require) `GHWIKINOTIFIER_HIPCHAT_ROOM`: Hipchat Room ID
+- (require) `GHWIKINOTIFIER_HIPCHAT_TOKEN`: HipChat Admin token
+- (require) `GHWIKINOTIFIER_HIPCHAT_ROOM_TOKEN`: HipChat notify token
 
 [npm-url]: https://www.npmjs.com/package/github-wiki-notifier
 [npm-image]: https://img.shields.io/npm/v/github-wiki-notifier.svg?style=flat-square
