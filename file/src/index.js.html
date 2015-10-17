@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/index.js | API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+</head>
+<body class="layout-container">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  <a href="test.html" data-ice="testLink">Test</a>
+  <a data-ice="repoURL" href="https://github.com/moqada/github-wiki-notifier.git" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/index.js~GitHubWikiNotifier.html">GitHubWikiNotifier</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-cloneRepo">cloneRepo</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getDiff">getDiff</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getDiffPages">getDiffPages</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getRepo">getRepo</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getRepoNameFromRemotePath">getRepoNameFromRemotePath</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getRepoPathFromPayload">getRepoPathFromPayload</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-hipchat">hipchat</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">formatters</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/formatters/HTMLFormatter.js~HTMLFomatter.html">HTMLFomatter</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">notifiers</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/notifiers/HipChatNotifier.js~HipChatNotifier.html">HipChatNotifier</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">utils</div><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-get">get</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/index.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import path from &apos;path&apos;;
+
+import {
+  getDiff,
+  getDiffPages,
+  getRepo,
+  getRepoNameFromRemotePath,
+  getRepoPathFromPayload
+} from &apos;./repository&apos;;
+import * as notifiers from &apos;./notifiers&apos;;
+
+
+/**
+ * Notify info of GitHub Wiki by specific notifier
+ */
+export default class GitHubWikiNotifier {
+
+  /**
+   * Constructor
+   *
+   * @param {string} notifierName notifier name
+   */
+  constructor(notifierName) {
+    this.notifier = new notifiers[notifierName]();
+  }
+
+  /**
+   * notify to service
+   *
+   * @param {Object} opts options
+   * @param {Object} [opts.payload] GitHub Webhook payload
+   * @param {string} [opts.repository] path to repository directory
+   * @param {string} [opts.cloneDir] path to directory for cloning remote repository
+   * @param {number} [opts.maxLength] max length
+   * @param {boolean} [opts.dryRun] a flag for disable sending
+   * @return {Promise}
+   */
+  notify(opts) {
+    const {repository, payload} = opts;
+    if (payload) {
+      return this.notifyFromPayload(payload, opts);
+    }
+    return this.notifyFromRepository(repository, opts);
+  }
+
+  /**
+   * notify from payload
+   *
+   * @param {Object} payload GitHub Webhook payload
+   * @param {Object} opts options
+   * @param {string} [opts.cloneDir] path to directory for cloning remote repository
+   * @param {number} [opts.maxLength] max length
+   * @param {boolean} [opts.dryRun] a flag for disable sending
+   * @return {Promise}
+   */
+  notifyFromPayload(payload, opts = {}) {
+    const {maxLength, cloneDir, dryRun} = opts;
+    return getRepo(getRepoPathFromPayload(payload), {cloneDir})
+      .then(({repo}) =&gt; getDiffPages(repo, ...payload.pages))
+      .then(diffPages =&gt; diffPages.filter(dp =&gt; dp.diff))
+      .then(diffPages =&gt; {
+        if (diffPages.length &gt; 0) {
+          return this.notifier.notify(diffPages, payload.repository, {
+            maxLength,
+            dryRun,
+            user: payload.sender
+          });
+        }
+        return null;
+      });
+  }
+
+  /**
+   * notify from repository
+   *
+   * @param {string} repository path to repository directory
+   * @param {Object} opts options
+   * @param {number} [opts.maxLength] max length
+   * @param {boolean} [opts.dryRun] a flag for disable sending
+   * @return {Promise}
+   */
+  notifyFromRepository(repository, opts = {}) {
+    const repoPath = repository || path.resolve(&apos;./&apos;);
+    const {maxLength, dryRun} = opts;
+    return getRepo(repoPath)
+      .then(({repo}) =&gt; getDiff(repo))
+      .then(diffString =&gt; {
+        if (diffString) {
+          return this.notifier.notify([diffString], getRepoNameFromRemotePath(repoPath), {
+            maxLength, dryRun
+          });
+        }
+        return null;
+      });
+  }
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.0)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">src/notifiers/HipChatNotifier.js | API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+</head>
+<body class="layout-container">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  <a href="test.html" data-ice="testLink">Test</a>
+  <a data-ice="repoURL" href="https://github.com/moqada/github-wiki-notifier.git" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/index.js~GitHubWikiNotifier.html">GitHubWikiNotifier</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-cloneRepo">cloneRepo</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getDiff">getDiff</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getDiffPages">getDiffPages</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getRepo">getRepo</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getRepoNameFromRemotePath">getRepoNameFromRemotePath</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getRepoPathFromPayload">getRepoPathFromPayload</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-hipchat">hipchat</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">formatters</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/formatters/HTMLFormatter.js~HTMLFomatter.html">HTMLFomatter</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">notifiers</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/notifiers/HipChatNotifier.js~HipChatNotifier.html">HipChatNotifier</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">utils</div><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-get">get</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/notifiers/HipChatNotifier.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import Hipchatter from &apos;hipchatter&apos;;
+
+import HTMLFormatter from &apos;../formatters/HTMLFormatter&apos;;
+import * as env from &apos;../utils/env&apos;;
+
+
+/**
+ * Notify to HipChat
+ *
+ * @param {Object[]|string[]} diffs diff list
+ * @param {Object|string} repository repository object in GitHub Webhook payload
+ * @param {Object} [user] sender object in GitHub Webhook payload
+ * @param {number} [maxLength] repository object in GitHub Webhook payload
+ * @param {Object} [opts] options
+ * @return {Promise}
+ */
+export default class HipChatNotifier {
+
+  /**
+   * Constructor
+   *
+   * @param {Object} [opts] options
+   */
+  constructor(opts = {}) {
+    this.room = opts.room || env.get(&apos;HIPCHAT_ROOM&apos;);
+    this.token = opts.token || env.get(&apos;HIPCHAT_TOKEN&apos;);
+    this.roomToken = opts.token || env.get(&apos;HIPCHAT_ROOM_TOKEN&apos;);
+    this.maxLength = 10000;
+    this.hipchatter = new Hipchatter(this.token);
+  }
+
+  get service() {
+    return &apos;HipChat&apos;;
+  }
+
+  /**
+   * Send message
+   *
+   * @param {Object[]|string[]} diffs diff list
+   * @param {Object|string} repository repository object in GitHub Webhook payload
+   * @param {Object} [user] sender object in GitHub Webhook payload
+   * @param {number} [maxLength] repository object in GitHub Webhook payload
+   * @param {boolean} [dryRun] a flag for disable sending
+   * @return {Promise}
+   */
+  notify(diffs, repository, {user, maxLength, dryRun} = {}) {
+    const message = new HTMLFormatter(maxLength || this.maxLength)
+      .createMessage(diffs, repository, {user});
+    const result = {message, status: &apos;success&apos;};
+    if (dryRun) {
+      return new Promise(resolve =&gt; resolve(result));
+    }
+    return new Promise((resolve, reject) =&gt; {
+      this.hipchatter.notify(this.room, {
+        message,
+        token: this.roomToken,
+        notify: true
+      }, err =&gt; {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+  }
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.0)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

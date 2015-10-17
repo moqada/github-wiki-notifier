@@ -1,0 +1,52 @@
+{
+  "coverage": "62.06%",
+  "expectCount": 29,
+  "actualCount": 18,
+  "files": {
+    "src/index.js": {
+      "expectCount": 6,
+      "actualCount": 5,
+      "undocumentLines": [
+        24
+      ]
+    },
+    "src/formatters/HTMLFormatter.js": {
+      "expectCount": 6,
+      "actualCount": 3,
+      "undocumentLines": [
+        4,
+        6,
+        7
+      ]
+    },
+    "src/notifiers/HipChatNotifier.js": {
+      "expectCount": 9,
+      "actualCount": 3,
+      "undocumentLines": [
+        29,
+        28,
+        25,
+        27,
+        32,
+        26
+      ]
+    },
+    "src/repository.js": {
+      "expectCount": 6,
+      "actualCount": 6,
+      "undocumentLines": []
+    },
+    "src/utils/env.js": {
+      "expectCount": 1,
+      "actualCount": 1,
+      "undocumentLines": []
+    },
+    "src/notifiers.js": {
+      "expectCount": 1,
+      "actualCount": 0,
+      "undocumentLines": [
+        3
+      ]
+    }
+  }
+}

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/repository.js | API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+</head>
+<body class="layout-container">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  <a href="test.html" data-ice="testLink">Test</a>
+  <a data-ice="repoURL" href="https://github.com/moqada/github-wiki-notifier.git" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/index.js~GitHubWikiNotifier.html">GitHubWikiNotifier</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-cloneRepo">cloneRepo</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getDiff">getDiff</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getDiffPages">getDiffPages</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getRepo">getRepo</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getRepoNameFromRemotePath">getRepoNameFromRemotePath</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getRepoPathFromPayload">getRepoPathFromPayload</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-hipchat">hipchat</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">formatters</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/formatters/HTMLFormatter.js~HTMLFomatter.html">HTMLFomatter</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">notifiers</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/notifiers/HipChatNotifier.js~HipChatNotifier.html">HipChatNotifier</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">utils</div><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-get">get</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/repository.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import git from &apos;simple-git&apos;;
+
+import * as env from &apos;./utils/env&apos;;
+
+
+/**
+ * Clone Repository
+ *
+ * @param {string} repoPath repository path
+ * @param {string} cloneDir local path for clone
+ * @return {Promise}
+ */
+export function cloneRepo(repoPath, cloneDir) {
+  return new Promise((resolve, reject) =&gt; {
+    git().clone(repoPath, cloneDir, err =&gt; {
+      if (err) {
+        reject(err);
+      } else {
+        resolve({repo: git(cloneDir)});
+      }
+    });
+  });
+}
+
+
+/**
+ * Get Repository name from remote path
+ *
+ * @param {string} repoPath repository path
+ * @return {string}
+ */
+export function getRepoNameFromRemotePath(repoPath) {
+  return repoPath.split(&apos;/&apos;).slice(-1)[0].split(&apos;.git&apos;)[0];
+}
+
+
+/**
+ * Get Repository
+ *
+ * @param {string} repoPath repository path
+ * @param {string} cloneDir local path for clone
+ * @return {Promise}
+ */
+export function getRepo(repoPath, {cloneDir} = {}) {
+  if (/^(?:(?:https?|ftps?|ssh|git|rsync):\/\/)/.test(repoPath)) {
+    return cloneRepo(repoPath, cloneDir || getRepoNameFromRemotePath(repoPath));
+  }
+  return new Promise(resolve =&gt; {
+    resolve({repo: git(repoPath)});
+  });
+}
+
+
+/**
+ * Get Diff Strings
+ *
+ * @param {Object} repo repository object of simple-git
+ * @param {String[]} opts diff options for Git command
+ * @return {Promise}
+ */
+export function getDiff(repo, ...opts) {
+  return new Promise((resolve, reject) =&gt; {
+    if (opts.length === 0) {
+      opts.push(&apos;HEAD~1&apos;);
+    }
+    repo.diff(opts, (err, diff) =&gt; {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(diff);
+      }
+    });
+  });
+}
+
+
+/**
+ * Get Diff Strings for Pages
+ *
+ * @param {Object} repo repository object of simple-git
+ * @param {Object[]} pages pages
+ * @return {Promise}
+ */
+export function getDiffPages(repo, ...pages) {
+  return Promise.all(pages.map(page =&gt; {
+    return getDiff(repo, `${page.sha}~1`).then(diff =&gt; ({page, diff}));
+  }));
+}
+
+
+/**
+ * Get remote repository path from payload object
+ *
+ * @param {Object} [payload] GitHub Webhook payload
+ * @return {string}
+ */
+export function getRepoPathFromPayload(payload) {
+  const repo = payload.repository;
+
+  /**
+   * @param {string} url repository path
+   * @return {string}
+   */
+  function replace(url) {
+    return url.replace(/\.git$/, &apos;.wiki.git&apos;);
+  }
+
+  if (!repo.private) {
+    return replace(repo.clone_url);
+  }
+  const token = env.get(&apos;GITHUB_TOKEN&apos;);
+  if (token) {
+    return replace(`https://${token}:@${repo.clone_url.split(&apos;https://&apos;)[0]}`);
+  }
+  return replace(repo.ssh_url);
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.0)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>

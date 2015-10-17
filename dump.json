@@ -1,0 +1,2080 @@
+[
+  {
+    "__docId__": 0,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/cli.js",
+    "memberof": null,
+    "longname": "src/cli.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 2,
+    "content": "#!/usr/bin/env node\nimport fs from 'fs';\n\nimport chalk from 'chalk';\nimport updateNotifier from 'update-notifier';\nimport yargs from 'yargs';\n\nimport GitHubWikiNotifier from './';\nimport * as env from './utils/env';\nimport pkg from '../package.json';\n\nupdateNotifier({pkg}).notify();\n\nconst argv = yargs\n  .usage([\n    'Usage: github-wiki-notifier <notifier>',\n    '                            [--paylod=<path>]',\n    '                            [--repository=<path>]',\n    '                            [--clone-dir=<path>]',\n    '                            [--max-message-length=<number>]',\n    '                            [--dry-run]',\n    '                            [--output-message]',\n    '',\n    'Notify diff of GitHub wiki to Chat'\n  ].join('\\n'))\n  .example(\n    'github-wiki-notifier hipchat --payload=/path/to/json',\n    'Notify to HipChat from payload file in local'\n  )\n  .example(\n    'github-wiki-notifier hipchat --repository=/path/to/repo',\n    'Notify latest diff to HipChat from repo in local'\n  )\n  .example(\n    'github-wiki-notifier hipchat',\n    'Notify to HipChat from payload string of environment variable'\n  )\n  .option('p', {\n    alias: 'payload',\n    description: 'Set path to GitHub Webhook payload for gollum',\n    type: 'string'\n  })\n  .option('r', {\n    alias: 'repository',\n    description: 'Set path to repository',\n    type: 'string'\n  })\n  .option('c', {\n    alias: 'clone-dir',\n    description: 'Set path to cloning remote repository [default: ./<repo>]',\n    type: 'string'\n  })\n  .option('max-message-length', {\n    description: 'Set max length of message for contains diff',\n    type: 'number'\n  })\n  .option('dry-run', {\n    description: 'Set flag to disable notify',\n    type: 'boolean'\n  })\n  .option('output-message', {\n    description: 'Set flag to output notify message',\n    type: 'boolean'\n  })\n  .help('help')\n  .demand(1)\n  .version(pkg.version)\n  .detectLocale(false)\n  .wrap(null)\n  .strict()\n  .argv;\n\n\n/**\n * Get Payload object\n *\n * @param {string|undefined} payloadPath path to payload file\n * @return {Object|undefined}\n */\nfunction getPayload(payloadPath) {\n  let payload = payloadPath && fs.readFileSync(payloadPath, {encoding: 'utf-8'});\n  payload = payload || env.get('WEBHOOK_PAYLOAD');\n  return payload && JSON.parse(payload);\n}\n\n\n/**\n * Generate directory path for cloning remote directory\n *\n * @param {string|undefined} cloneDirPath path to directory for cloning remote repository\n * @param {Object|undefined} payload GitHub Webhook payload\n * @return {string|undefined}\n */\nfunction getCloneDir(cloneDirPath, payload) {\n  if (!cloneDirPath && payload) {\n    return `./${payload.repository.name}`;\n  }\n  return cloneDirPath;\n}\n\n\n/**\n * execute\n *\n * @param {Object} args cli arguments\n */\nfunction execute(args) {\n  const [notifier] = args._;\n  const payload = getPayload(args.payload);\n  const opts = {\n    payload,\n    repository: args.repository,\n    cloneDir: getCloneDir(args.cloneDir, payload),\n    maxLength: args.maxMessageLength,\n    dryRun: args.dryRun\n  };\n  const ghwn = new GitHubWikiNotifier(notifier);\n  ghwn.notify(opts)\n    .then(result => {\n      if (!result) {\n        console.log(chalk.bold('Nothing content for notification'));\n      } else if (result.status === 'success') {\n        if (args.outputMessage) {\n          console.log(result.message);\n        }\n        console.log(chalk.bold.green(`Success notify to ${notifier}`));\n      }\n      process.exit();\n    })\n    .catch(e => {\n      console.error(chalk.bold.red(e));\n      process.exit(1);\n    });\n}\n\ntry {\n  execute(argv);\n} catch (e) {\n  console.error(chalk.bold.red(e));\n  process.exit(1);\n}\n"
+  },
+  {
+    "__docId__": 1,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "argv",
+    "memberof": "src/cli.js",
+    "longname": "src/cli.js~argv",
+    "access": null,
+    "export": false,
+    "importPath": "github-wiki-notifier/src/cli.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 14,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 2,
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "getPayload",
+    "memberof": "src/cli.js",
+    "longname": "src/cli.js~getPayload",
+    "access": null,
+    "export": false,
+    "importPath": "github-wiki-notifier/src/cli.js",
+    "importStyle": null,
+    "description": "Get Payload object",
+    "lineNumber": 80,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "undefined"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "payloadPath",
+        "description": "path to payload file"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Object",
+        "undefined"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 3,
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "getCloneDir",
+    "memberof": "src/cli.js",
+    "longname": "src/cli.js~getCloneDir",
+    "access": null,
+    "export": false,
+    "importPath": "github-wiki-notifier/src/cli.js",
+    "importStyle": null,
+    "description": "Generate directory path for cloning remote directory",
+    "lineNumber": 94,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string",
+          "undefined"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "cloneDirPath",
+        "description": "path to directory for cloning remote repository"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object",
+          "undefined"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "payload",
+        "description": "GitHub Webhook payload"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "string",
+        "undefined"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 4,
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "execute",
+    "memberof": "src/cli.js",
+    "longname": "src/cli.js~execute",
+    "access": null,
+    "export": false,
+    "importPath": "github-wiki-notifier/src/cli.js",
+    "importStyle": null,
+    "description": "execute",
+    "lineNumber": 107,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "args",
+        "description": "cli arguments"
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 5,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/formatters/HTMLFormatter.js",
+    "memberof": null,
+    "longname": "src/formatters/HTMLFormatter.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "import escapeHtml from 'escape-html';\n\n\nexport default class HTMLFomatter {\n\n  constructor(maxLength) {\n    this.maxLength = maxLength;\n  }\n\n  /**\n   * create HTML for sending message\n   *\n   * @param {Object[]|string[]} diffs diff list\n   * @param {Object|string} repository repository object in GitHub Webhook payload\n   * @param {Object} [user] sender object in GitHub Webhook payload\n   * @param {number} [maxLength] max words length for contains diff string\n   * @return {string}\n   */\n  createMessage(diffs, repository, {user} = {}) {\n    return diffs.map(d => {\n      let header = '';\n      let body = '';\n      if (typeof d === 'string') {\n        header = `Edited on ${repository}`;\n        body = this.createDiff(d);\n      } else {\n        header = this.createHeader(d.page, user, repository);\n        body = this.createDiff(d.diff);\n      }\n      if (body.length + header.length > this.maxLength) {\n        return header;\n      }\n      return `${header}<br /><pre>${body}</pre>`;\n    }).join('<br />');\n  }\n\n  /**\n   * Create HTML for Header\n   *\n   * @param {Object} page page object in GitHub Webhook payload\n   * @param {Object} user sender object in GitHub Webhook payload\n   * @param {Object} repository repository object in GitHub Webhook payload\n   * @return {string}\n   */\n  createHeader(page, user, repository) {\n    const iconTag = `<img src=\"${user.avatar_url}\" width=\"24\" />`;\n    const userTag = `<a href=\"${user.html_url}\">${user.login}</a>`;\n    const pageTag = `<a href=\"${page.html_url}\">${page.page_name}</a>`;\n    const repoTag = `<a href=\"${repository.html_url}\">${repository.full_name}</a>`;\n    return `${iconTag} ${userTag} ${page.action} ${pageTag} on ${repoTag}`;\n  }\n\n  /**\n   * Convert Diff string to HTML\n   *\n   * @param {string} diffString diff string\n   * @return {string}\n   */\n  createDiff(diffString) {\n    return diffString.split('\\n').map(line => {\n      const escaped = escapeHtml(line);\n      if (line.indexOf('-') === 0) {\n        return `<span style=\"color:red\">${escaped}</span>`;\n      } else if (line.indexOf('+') === 0) {\n        return `<span style=\"color:green\">${escaped}</span>`;\n      } else if (line.indexOf('diff') === 0) {\n        return `<strong>${escaped}</strong>`;\n      } else if (/^(?:index|@)/.test(line)) {\n        return `<span style=\"color:gray\">${escaped}</span>`;\n      }\n      return escaped;\n    }).join('\\n');\n  }\n}\n"
+  },
+  {
+    "__docId__": 6,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "HTMLFomatter",
+    "memberof": "src/formatters/HTMLFormatter.js",
+    "longname": "src/formatters/HTMLFormatter.js~HTMLFomatter",
+    "access": null,
+    "export": true,
+    "importPath": "github-wiki-notifier/src/formatters/HTMLFormatter.js",
+    "importStyle": "HTMLFomatter",
+    "description": null,
+    "lineNumber": 4,
+    "undocument": true,
+    "interface": false
+  },
+  {
+    "__docId__": 7,
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/formatters/HTMLFormatter.js~HTMLFomatter",
+    "longname": "src/formatters/HTMLFormatter.js~HTMLFomatter#constructor",
+    "access": null,
+    "description": null,
+    "lineNumber": 6,
+    "undocument": true,
+    "params": [
+      {
+        "name": "maxLength",
+        "types": [
+          "*"
+        ]
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 8,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "maxLength",
+    "memberof": "src/formatters/HTMLFormatter.js~HTMLFomatter",
+    "longname": "src/formatters/HTMLFormatter.js~HTMLFomatter#maxLength",
+    "access": null,
+    "description": null,
+    "lineNumber": 7,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 9,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "createMessage",
+    "memberof": "src/formatters/HTMLFormatter.js~HTMLFomatter",
+    "longname": "src/formatters/HTMLFormatter.js~HTMLFomatter#createMessage",
+    "access": null,
+    "description": "create HTML for sending message",
+    "lineNumber": 19,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object[]",
+          "string[]"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "diffs",
+        "description": "diff list"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object",
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "repository",
+        "description": "repository object in GitHub Webhook payload"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "user",
+        "description": "sender object in GitHub Webhook payload"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "number"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "maxLength",
+        "description": "max words length for contains diff string"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "string"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 10,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "createHeader",
+    "memberof": "src/formatters/HTMLFormatter.js~HTMLFomatter",
+    "longname": "src/formatters/HTMLFormatter.js~HTMLFomatter#createHeader",
+    "access": null,
+    "description": "Create HTML for Header",
+    "lineNumber": 45,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "page",
+        "description": "page object in GitHub Webhook payload"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "user",
+        "description": "sender object in GitHub Webhook payload"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "repository",
+        "description": "repository object in GitHub Webhook payload"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "string"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 11,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "createDiff",
+    "memberof": "src/formatters/HTMLFormatter.js~HTMLFomatter",
+    "longname": "src/formatters/HTMLFormatter.js~HTMLFomatter#createDiff",
+    "access": null,
+    "description": "Convert Diff string to HTML",
+    "lineNumber": 59,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "diffString",
+        "description": "diff string"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "string"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 12,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/index.js",
+    "memberof": null,
+    "longname": "src/index.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "import path from 'path';\n\nimport {\n  getDiff,\n  getDiffPages,\n  getRepo,\n  getRepoNameFromRemotePath,\n  getRepoPathFromPayload\n} from './repository';\nimport * as notifiers from './notifiers';\n\n\n/**\n * Notify info of GitHub Wiki by specific notifier\n */\nexport default class GitHubWikiNotifier {\n\n  /**\n   * Constructor\n   *\n   * @param {string} notifierName notifier name\n   */\n  constructor(notifierName) {\n    this.notifier = new notifiers[notifierName]();\n  }\n\n  /**\n   * notify to service\n   *\n   * @param {Object} opts options\n   * @param {Object} [opts.payload] GitHub Webhook payload\n   * @param {string} [opts.repository] path to repository directory\n   * @param {string} [opts.cloneDir] path to directory for cloning remote repository\n   * @param {number} [opts.maxLength] max length\n   * @param {boolean} [opts.dryRun] a flag for disable sending\n   * @return {Promise}\n   */\n  notify(opts) {\n    const {repository, payload} = opts;\n    if (payload) {\n      return this.notifyFromPayload(payload, opts);\n    }\n    return this.notifyFromRepository(repository, opts);\n  }\n\n  /**\n   * notify from payload\n   *\n   * @param {Object} payload GitHub Webhook payload\n   * @param {Object} opts options\n   * @param {string} [opts.cloneDir] path to directory for cloning remote repository\n   * @param {number} [opts.maxLength] max length\n   * @param {boolean} [opts.dryRun] a flag for disable sending\n   * @return {Promise}\n   */\n  notifyFromPayload(payload, opts = {}) {\n    const {maxLength, cloneDir, dryRun} = opts;\n    return getRepo(getRepoPathFromPayload(payload), {cloneDir})\n      .then(({repo}) => getDiffPages(repo, ...payload.pages))\n      .then(diffPages => diffPages.filter(dp => dp.diff))\n      .then(diffPages => {\n        if (diffPages.length > 0) {\n          return this.notifier.notify(diffPages, payload.repository, {\n            maxLength,\n            dryRun,\n            user: payload.sender\n          });\n        }\n        return null;\n      });\n  }\n\n  /**\n   * notify from repository\n   *\n   * @param {string} repository path to repository directory\n   * @param {Object} opts options\n   * @param {number} [opts.maxLength] max length\n   * @param {boolean} [opts.dryRun] a flag for disable sending\n   * @return {Promise}\n   */\n  notifyFromRepository(repository, opts = {}) {\n    const repoPath = repository || path.resolve('./');\n    const {maxLength, dryRun} = opts;\n    return getRepo(repoPath)\n      .then(({repo}) => getDiff(repo))\n      .then(diffString => {\n        if (diffString) {\n          return this.notifier.notify([diffString], getRepoNameFromRemotePath(repoPath), {\n            maxLength, dryRun\n          });\n        }\n        return null;\n      });\n  }\n}\n"
+  },
+  {
+    "__docId__": 13,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "GitHubWikiNotifier",
+    "memberof": "src/index.js",
+    "longname": "src/index.js~GitHubWikiNotifier",
+    "access": null,
+    "export": true,
+    "importPath": "github-wiki-notifier/src/index.js",
+    "importStyle": "GitHubWikiNotifier",
+    "description": "Notify info of GitHub Wiki by specific notifier",
+    "lineNumber": 16,
+    "interface": false
+  },
+  {
+    "__docId__": 14,
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/index.js~GitHubWikiNotifier",
+    "longname": "src/index.js~GitHubWikiNotifier#constructor",
+    "access": null,
+    "description": "Constructor",
+    "lineNumber": 23,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "notifierName",
+        "description": "notifier name"
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 15,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "notifier",
+    "memberof": "src/index.js~GitHubWikiNotifier",
+    "longname": "src/index.js~GitHubWikiNotifier#notifier",
+    "access": null,
+    "description": null,
+    "lineNumber": 24,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 16,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "notify",
+    "memberof": "src/index.js~GitHubWikiNotifier",
+    "longname": "src/index.js~GitHubWikiNotifier#notify",
+    "access": null,
+    "description": "notify to service",
+    "lineNumber": 38,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "opts",
+        "description": "options"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "opts.payload",
+        "description": "GitHub Webhook payload"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "opts.repository",
+        "description": "path to repository directory"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "opts.cloneDir",
+        "description": "path to directory for cloning remote repository"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "number"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "opts.maxLength",
+        "description": "max length"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "boolean"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "opts.dryRun",
+        "description": "a flag for disable sending"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Promise"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 17,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "notifyFromPayload",
+    "memberof": "src/index.js~GitHubWikiNotifier",
+    "longname": "src/index.js~GitHubWikiNotifier#notifyFromPayload",
+    "access": null,
+    "description": "notify from payload",
+    "lineNumber": 56,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "payload",
+        "description": "GitHub Webhook payload"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "opts",
+        "description": "options"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "opts.cloneDir",
+        "description": "path to directory for cloning remote repository"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "number"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "opts.maxLength",
+        "description": "max length"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "boolean"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "opts.dryRun",
+        "description": "a flag for disable sending"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Promise"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 18,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "notifyFromRepository",
+    "memberof": "src/index.js~GitHubWikiNotifier",
+    "longname": "src/index.js~GitHubWikiNotifier#notifyFromRepository",
+    "access": null,
+    "description": "notify from repository",
+    "lineNumber": 82,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "repository",
+        "description": "path to repository directory"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "opts",
+        "description": "options"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "number"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "opts.maxLength",
+        "description": "max length"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "boolean"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "opts.dryRun",
+        "description": "a flag for disable sending"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Promise"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 19,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/notifiers/HipChatNotifier.js",
+    "memberof": null,
+    "longname": "src/notifiers/HipChatNotifier.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "import Hipchatter from 'hipchatter';\n\nimport HTMLFormatter from '../formatters/HTMLFormatter';\nimport * as env from '../utils/env';\n\n\n/**\n * Notify to HipChat\n *\n * @param {Object[]|string[]} diffs diff list\n * @param {Object|string} repository repository object in GitHub Webhook payload\n * @param {Object} [user] sender object in GitHub Webhook payload\n * @param {number} [maxLength] repository object in GitHub Webhook payload\n * @param {Object} [opts] options\n * @return {Promise}\n */\nexport default class HipChatNotifier {\n\n  /**\n   * Constructor\n   *\n   * @param {Object} [opts] options\n   */\n  constructor(opts = {}) {\n    this.room = opts.room || env.get('HIPCHAT_ROOM');\n    this.token = opts.token || env.get('HIPCHAT_TOKEN');\n    this.roomToken = opts.token || env.get('HIPCHAT_ROOM_TOKEN');\n    this.maxLength = 10000;\n    this.hipchatter = new Hipchatter(this.token);\n  }\n\n  get service() {\n    return 'HipChat';\n  }\n\n  /**\n   * Send message\n   *\n   * @param {Object[]|string[]} diffs diff list\n   * @param {Object|string} repository repository object in GitHub Webhook payload\n   * @param {Object} [user] sender object in GitHub Webhook payload\n   * @param {number} [maxLength] repository object in GitHub Webhook payload\n   * @param {boolean} [dryRun] a flag for disable sending\n   * @return {Promise}\n   */\n  notify(diffs, repository, {user, maxLength, dryRun} = {}) {\n    const message = new HTMLFormatter(maxLength || this.maxLength)\n      .createMessage(diffs, repository, {user});\n    const result = {message, status: 'success'};\n    if (dryRun) {\n      return new Promise(resolve => resolve(result));\n    }\n    return new Promise((resolve, reject) => {\n      this.hipchatter.notify(this.room, {\n        message,\n        token: this.roomToken,\n        notify: true\n      }, err => {\n        if (err) {\n          reject(err);\n        } else {\n          resolve(result);\n        }\n      });\n    });\n  }\n}\n"
+  },
+  {
+    "__docId__": 20,
+    "kind": "class",
+    "static": true,
+    "variation": null,
+    "name": "HipChatNotifier",
+    "memberof": "src/notifiers/HipChatNotifier.js",
+    "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier",
+    "access": null,
+    "export": true,
+    "importPath": "github-wiki-notifier/src/notifiers/HipChatNotifier.js",
+    "importStyle": "HipChatNotifier",
+    "description": "Notify to HipChat",
+    "lineNumber": 17,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object[]",
+          "string[]"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "diffs",
+        "description": "diff list"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object",
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "repository",
+        "description": "repository object in GitHub Webhook payload"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "user",
+        "description": "sender object in GitHub Webhook payload"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "number"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "maxLength",
+        "description": "repository object in GitHub Webhook payload"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "opts",
+        "description": "options"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Promise"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "interface": false
+  },
+  {
+    "__docId__": 21,
+    "kind": "constructor",
+    "static": false,
+    "variation": null,
+    "name": "constructor",
+    "memberof": "src/notifiers/HipChatNotifier.js~HipChatNotifier",
+    "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier#constructor",
+    "access": null,
+    "description": "Constructor",
+    "lineNumber": 24,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "opts",
+        "description": "options"
+      }
+    ],
+    "generator": false
+  },
+  {
+    "__docId__": 22,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "room",
+    "memberof": "src/notifiers/HipChatNotifier.js~HipChatNotifier",
+    "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier#room",
+    "access": null,
+    "description": null,
+    "lineNumber": 25,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 23,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "token",
+    "memberof": "src/notifiers/HipChatNotifier.js~HipChatNotifier",
+    "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier#token",
+    "access": null,
+    "description": null,
+    "lineNumber": 26,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 24,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "roomToken",
+    "memberof": "src/notifiers/HipChatNotifier.js~HipChatNotifier",
+    "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier#roomToken",
+    "access": null,
+    "description": null,
+    "lineNumber": 27,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 25,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "maxLength",
+    "memberof": "src/notifiers/HipChatNotifier.js~HipChatNotifier",
+    "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier#maxLength",
+    "access": null,
+    "description": null,
+    "lineNumber": 28,
+    "undocument": true,
+    "type": {
+      "types": [
+        "number"
+      ]
+    }
+  },
+  {
+    "__docId__": 26,
+    "kind": "member",
+    "static": false,
+    "variation": null,
+    "name": "hipchatter",
+    "memberof": "src/notifiers/HipChatNotifier.js~HipChatNotifier",
+    "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier#hipchatter",
+    "access": null,
+    "description": null,
+    "lineNumber": 29,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 27,
+    "kind": "get",
+    "static": false,
+    "variation": null,
+    "name": "service",
+    "memberof": "src/notifiers/HipChatNotifier.js~HipChatNotifier",
+    "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier#service",
+    "access": null,
+    "description": null,
+    "lineNumber": 32,
+    "undocument": true,
+    "type": {
+      "types": [
+        "string"
+      ]
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 28,
+    "kind": "method",
+    "static": false,
+    "variation": null,
+    "name": "notify",
+    "memberof": "src/notifiers/HipChatNotifier.js~HipChatNotifier",
+    "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier#notify",
+    "access": null,
+    "description": "Send message",
+    "lineNumber": 46,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object[]",
+          "string[]"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "diffs",
+        "description": "diff list"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object",
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "repository",
+        "description": "repository object in GitHub Webhook payload"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "user",
+        "description": "sender object in GitHub Webhook payload"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "number"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "maxLength",
+        "description": "repository object in GitHub Webhook payload"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "boolean"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "dryRun",
+        "description": "a flag for disable sending"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Promise"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 29,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/notifiers.js",
+    "memberof": null,
+    "longname": "src/notifiers.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "import HipChatNotifier from './notifiers/HipChatNotifier';\n\nexport const hipchat = HipChatNotifier;\n"
+  },
+  {
+    "__docId__": 30,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "hipchat",
+    "memberof": "src/notifiers.js",
+    "longname": "src/notifiers.js~hipchat",
+    "access": null,
+    "export": true,
+    "importPath": "github-wiki-notifier/src/notifiers.js",
+    "importStyle": "{hipchat}",
+    "description": null,
+    "lineNumber": 3,
+    "undocument": true,
+    "type": {
+      "types": [
+        "*"
+      ]
+    }
+  },
+  {
+    "__docId__": 31,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/repository.js",
+    "memberof": null,
+    "longname": "src/repository.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "import git from 'simple-git';\n\nimport * as env from './utils/env';\n\n\n/**\n * Clone Repository\n *\n * @param {string} repoPath repository path\n * @param {string} cloneDir local path for clone\n * @return {Promise}\n */\nexport function cloneRepo(repoPath, cloneDir) {\n  return new Promise((resolve, reject) => {\n    git().clone(repoPath, cloneDir, err => {\n      if (err) {\n        reject(err);\n      } else {\n        resolve({repo: git(cloneDir)});\n      }\n    });\n  });\n}\n\n\n/**\n * Get Repository name from remote path\n *\n * @param {string} repoPath repository path\n * @return {string}\n */\nexport function getRepoNameFromRemotePath(repoPath) {\n  return repoPath.split('/').slice(-1)[0].split('.git')[0];\n}\n\n\n/**\n * Get Repository\n *\n * @param {string} repoPath repository path\n * @param {string} cloneDir local path for clone\n * @return {Promise}\n */\nexport function getRepo(repoPath, {cloneDir} = {}) {\n  if (/^(?:(?:https?|ftps?|ssh|git|rsync):\\/\\/)/.test(repoPath)) {\n    return cloneRepo(repoPath, cloneDir || getRepoNameFromRemotePath(repoPath));\n  }\n  return new Promise(resolve => {\n    resolve({repo: git(repoPath)});\n  });\n}\n\n\n/**\n * Get Diff Strings\n *\n * @param {Object} repo repository object of simple-git\n * @param {String[]} opts diff options for Git command\n * @return {Promise}\n */\nexport function getDiff(repo, ...opts) {\n  return new Promise((resolve, reject) => {\n    if (opts.length === 0) {\n      opts.push('HEAD~1');\n    }\n    repo.diff(opts, (err, diff) => {\n      if (err) {\n        reject(err);\n      } else {\n        resolve(diff);\n      }\n    });\n  });\n}\n\n\n/**\n * Get Diff Strings for Pages\n *\n * @param {Object} repo repository object of simple-git\n * @param {Object[]} pages pages\n * @return {Promise}\n */\nexport function getDiffPages(repo, ...pages) {\n  return Promise.all(pages.map(page => {\n    return getDiff(repo, `${page.sha}~1`).then(diff => ({page, diff}));\n  }));\n}\n\n\n/**\n * Get remote repository path from payload object\n *\n * @param {Object} [payload] GitHub Webhook payload\n * @return {string}\n */\nexport function getRepoPathFromPayload(payload) {\n  const repo = payload.repository;\n\n  /**\n   * @param {string} url repository path\n   * @return {string}\n   */\n  function replace(url) {\n    return url.replace(/\\.git$/, '.wiki.git');\n  }\n\n  if (!repo.private) {\n    return replace(repo.clone_url);\n  }\n  const token = env.get('GITHUB_TOKEN');\n  if (token) {\n    return replace(`https://${token}:@${repo.clone_url.split('https://')[0]}`);\n  }\n  return replace(repo.ssh_url);\n}\n"
+  },
+  {
+    "__docId__": 32,
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "cloneRepo",
+    "memberof": "src/repository.js",
+    "longname": "src/repository.js~cloneRepo",
+    "access": null,
+    "export": true,
+    "importPath": "github-wiki-notifier/src/repository.js",
+    "importStyle": "{cloneRepo}",
+    "description": "Clone Repository",
+    "lineNumber": 13,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "repoPath",
+        "description": "repository path"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "cloneDir",
+        "description": "local path for clone"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Promise"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 33,
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "getRepoNameFromRemotePath",
+    "memberof": "src/repository.js",
+    "longname": "src/repository.js~getRepoNameFromRemotePath",
+    "access": null,
+    "export": true,
+    "importPath": "github-wiki-notifier/src/repository.js",
+    "importStyle": "{getRepoNameFromRemotePath}",
+    "description": "Get Repository name from remote path",
+    "lineNumber": 32,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "repoPath",
+        "description": "repository path"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "string"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 34,
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "getRepo",
+    "memberof": "src/repository.js",
+    "longname": "src/repository.js~getRepo",
+    "access": null,
+    "export": true,
+    "importPath": "github-wiki-notifier/src/repository.js",
+    "importStyle": "{getRepo}",
+    "description": "Get Repository",
+    "lineNumber": 44,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "repoPath",
+        "description": "repository path"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "cloneDir",
+        "description": "local path for clone"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Promise"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 35,
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "getDiff",
+    "memberof": "src/repository.js",
+    "longname": "src/repository.js~getDiff",
+    "access": null,
+    "export": true,
+    "importPath": "github-wiki-notifier/src/repository.js",
+    "importStyle": "{getDiff}",
+    "description": "Get Diff Strings",
+    "lineNumber": 61,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "repo",
+        "description": "repository object of simple-git"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "String[]"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "opts",
+        "description": "diff options for Git command"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Promise"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 36,
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "getDiffPages",
+    "memberof": "src/repository.js",
+    "longname": "src/repository.js~getDiffPages",
+    "access": null,
+    "export": true,
+    "importPath": "github-wiki-notifier/src/repository.js",
+    "importStyle": "{getDiffPages}",
+    "description": "Get Diff Strings for Pages",
+    "lineNumber": 84,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "repo",
+        "description": "repository object of simple-git"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object[]"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "pages",
+        "description": "pages"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Promise"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 37,
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "getRepoPathFromPayload",
+    "memberof": "src/repository.js",
+    "longname": "src/repository.js~getRepoPathFromPayload",
+    "access": null,
+    "export": true,
+    "importPath": "github-wiki-notifier/src/repository.js",
+    "importStyle": "{getRepoPathFromPayload}",
+    "description": "Get remote repository path from payload object",
+    "lineNumber": 97,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": true,
+        "name": "payload",
+        "description": "GitHub Webhook payload"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "string"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 38,
+    "kind": "file",
+    "static": true,
+    "variation": null,
+    "name": "src/utils/env.js",
+    "memberof": null,
+    "longname": "src/utils/env.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "const PREFIX = 'GHWIKINOTIFIER_';\n\n/**\n * Get environment variables\n *\n * @param {string} name variable name\n * @return {string|undefined}\n */\nexport function get(name) {\n  return process.env[`${PREFIX}${name}`];\n}\n"
+  },
+  {
+    "__docId__": 39,
+    "kind": "variable",
+    "static": true,
+    "variation": null,
+    "name": "PREFIX",
+    "memberof": "src/utils/env.js",
+    "longname": "src/utils/env.js~PREFIX",
+    "access": null,
+    "export": false,
+    "importPath": "github-wiki-notifier/src/utils/env.js",
+    "importStyle": null,
+    "description": null,
+    "lineNumber": 1,
+    "undocument": true,
+    "type": {
+      "types": [
+        "string"
+      ]
+    }
+  },
+  {
+    "__docId__": 40,
+    "kind": "function",
+    "static": true,
+    "variation": null,
+    "name": "get",
+    "memberof": "src/utils/env.js",
+    "longname": "src/utils/env.js~get",
+    "access": null,
+    "export": true,
+    "importPath": "github-wiki-notifier/src/utils/env.js",
+    "importStyle": "{get}",
+    "description": "Get environment variables",
+    "lineNumber": 9,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "string"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "name",
+        "description": "variable name"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "string",
+        "undefined"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "generator": false
+  },
+  {
+    "__docId__": 42,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Infinity",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Infinity",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Infinity",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 43,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "NaN",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/NaN",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~NaN",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 44,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "undefined",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~undefined",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 45,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "null",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~null",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 46,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Object",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Object",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 47,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "object",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~object",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 48,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Function",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Function",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 49,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "function",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~function",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 50,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Boolean",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Boolean",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 51,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "boolean",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~boolean",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 52,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Symbol",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Symbol",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 53,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Error",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Error",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 54,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "EvalError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/EvalError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~EvalError",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 55,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "InternalError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/InternalError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~InternalError",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 56,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "RangeError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RangeError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~RangeError",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 57,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "ReferenceError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ReferenceError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~ReferenceError",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 58,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "SyntaxError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~SyntaxError",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 59,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "TypeError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~TypeError",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 60,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "URIError",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/URIError",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~URIError",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 61,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Number",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Number",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 62,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "number",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~number",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 63,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Date",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Date",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 64,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "String",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~String",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 65,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "string",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~string",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 66,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "RegExp",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~RegExp",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 67,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 68,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Int8Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int8Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Int8Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 69,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Uint8Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint8Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 70,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Uint8ClampedArray",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8ClampedArray",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint8ClampedArray",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 71,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Int16Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int16Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Int16Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 72,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Uint16Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint16Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint16Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 73,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Int32Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int32Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Int32Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 74,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Uint32Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint32Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Uint32Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 75,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Float32Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Float32Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 76,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Float64Array",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float64Array",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Float64Array",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 77,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Map",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Map",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 78,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Set",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Set",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 79,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "WeakMap",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~WeakMap",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 80,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "WeakSet",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~WeakSet",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 81,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "ArrayBuffer",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~ArrayBuffer",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 82,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "DataView",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~DataView",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 83,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "JSON",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~JSON",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 84,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Promise",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Promise",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 85,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Generator",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Generator",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 86,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "GeneratorFunction",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/GeneratorFunction",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~GeneratorFunction",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 87,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Reflect",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Reflect",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 88,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Proxy",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy",
+    "memberof": "BuiltinExternal/ECMAScriptExternal.js",
+    "longname": "BuiltinExternal/ECMAScriptExternal.js~Proxy",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 90,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "CanvasRenderingContext2D",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~CanvasRenderingContext2D",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 91,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "DocumentFragment",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~DocumentFragment",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 92,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Element",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Element",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~Element",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 93,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Event",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Event",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~Event",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 94,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "Node",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Node",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~Node",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 95,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "NodeList",
+    "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/NodeList",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~NodeList",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 96,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "XMLHttpRequest",
+    "externalLink": "https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~XMLHttpRequest",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 97,
+    "kind": "testFile",
+    "static": true,
+    "variation": null,
+    "name": "test/index-spec.js",
+    "memberof": null,
+    "longname": "test/index-spec.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1,
+    "content": "import assert from 'power-assert';\nimport lib from '../src';\n\ndescribe('github-wiki-notifier', () => {\n  it('is defined', () => {\n    assert(lib);\n  });\n});\n"
+  },
+  {
+    "__docId__": 98,
+    "kind": "testDescribe",
+    "static": true,
+    "variation": null,
+    "name": "describe0",
+    "testId": 0,
+    "memberof": "test/index-spec.js",
+    "testDepth": 0,
+    "longname": "test/index-spec.js~describe0",
+    "access": null,
+    "description": "github-wiki-notifier",
+    "lineNumber": 4
+  },
+  {
+    "__docId__": 99,
+    "kind": "testIt",
+    "static": true,
+    "variation": null,
+    "name": "it1",
+    "testId": 1,
+    "memberof": "test/index-spec.js~describe0",
+    "testDepth": 1,
+    "longname": "test/index-spec.js~describe0.it1",
+    "access": null,
+    "description": "is defined",
+    "lineNumber": 5
+  }
+]

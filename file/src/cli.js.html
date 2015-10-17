@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/cli.js | API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+</head>
+<body class="layout-container">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  <a href="test.html" data-ice="testLink">Test</a>
+  <a data-ice="repoURL" href="https://github.com/moqada/github-wiki-notifier.git" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/index.js~GitHubWikiNotifier.html">GitHubWikiNotifier</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-cloneRepo">cloneRepo</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getDiff">getDiff</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getDiffPages">getDiffPages</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getRepo">getRepo</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getRepoNameFromRemotePath">getRepoNameFromRemotePath</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-getRepoPathFromPayload">getRepoPathFromPayload</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-hipchat">hipchat</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">formatters</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/formatters/HTMLFormatter.js~HTMLFomatter.html">HTMLFomatter</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">notifiers</div><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/notifiers/HipChatNotifier.js~HipChatNotifier.html">HipChatNotifier</a></span></span></li>
+<li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">utils</div><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-get">get</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">src/cli.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">#!/usr/bin/env node
+import fs from &apos;fs&apos;;
+
+import chalk from &apos;chalk&apos;;
+import updateNotifier from &apos;update-notifier&apos;;
+import yargs from &apos;yargs&apos;;
+
+import GitHubWikiNotifier from &apos;./&apos;;
+import * as env from &apos;./utils/env&apos;;
+import pkg from &apos;../package.json&apos;;
+
+updateNotifier({pkg}).notify();
+
+const argv = yargs
+  .usage([
+    &apos;Usage: github-wiki-notifier &lt;notifier&gt;&apos;,
+    &apos;                            [--paylod=&lt;path&gt;]&apos;,
+    &apos;                            [--repository=&lt;path&gt;]&apos;,
+    &apos;                            [--clone-dir=&lt;path&gt;]&apos;,
+    &apos;                            [--max-message-length=&lt;number&gt;]&apos;,
+    &apos;                            [--dry-run]&apos;,
+    &apos;                            [--output-message]&apos;,
+    &apos;&apos;,
+    &apos;Notify diff of GitHub wiki to Chat&apos;
+  ].join(&apos;\n&apos;))
+  .example(
+    &apos;github-wiki-notifier hipchat --payload=/path/to/json&apos;,
+    &apos;Notify to HipChat from payload file in local&apos;
+  )
+  .example(
+    &apos;github-wiki-notifier hipchat --repository=/path/to/repo&apos;,
+    &apos;Notify latest diff to HipChat from repo in local&apos;
+  )
+  .example(
+    &apos;github-wiki-notifier hipchat&apos;,
+    &apos;Notify to HipChat from payload string of environment variable&apos;
+  )
+  .option(&apos;p&apos;, {
+    alias: &apos;payload&apos;,
+    description: &apos;Set path to GitHub Webhook payload for gollum&apos;,
+    type: &apos;string&apos;
+  })
+  .option(&apos;r&apos;, {
+    alias: &apos;repository&apos;,
+    description: &apos;Set path to repository&apos;,
+    type: &apos;string&apos;
+  })
+  .option(&apos;c&apos;, {
+    alias: &apos;clone-dir&apos;,
+    description: &apos;Set path to cloning remote repository [default: ./&lt;repo&gt;]&apos;,
+    type: &apos;string&apos;
+  })
+  .option(&apos;max-message-length&apos;, {
+    description: &apos;Set max length of message for contains diff&apos;,
+    type: &apos;number&apos;
+  })
+  .option(&apos;dry-run&apos;, {
+    description: &apos;Set flag to disable notify&apos;,
+    type: &apos;boolean&apos;
+  })
+  .option(&apos;output-message&apos;, {
+    description: &apos;Set flag to output notify message&apos;,
+    type: &apos;boolean&apos;
+  })
+  .help(&apos;help&apos;)
+  .demand(1)
+  .version(pkg.version)
+  .detectLocale(false)
+  .wrap(null)
+  .strict()
+  .argv;
+
+
+/**
+ * Get Payload object
+ *
+ * @param {string|undefined} payloadPath path to payload file
+ * @return {Object|undefined}
+ */
+function getPayload(payloadPath) {
+  let payload = payloadPath &amp;&amp; fs.readFileSync(payloadPath, {encoding: &apos;utf-8&apos;});
+  payload = payload || env.get(&apos;WEBHOOK_PAYLOAD&apos;);
+  return payload &amp;&amp; JSON.parse(payload);
+}
+
+
+/**
+ * Generate directory path for cloning remote directory
+ *
+ * @param {string|undefined} cloneDirPath path to directory for cloning remote repository
+ * @param {Object|undefined} payload GitHub Webhook payload
+ * @return {string|undefined}
+ */
+function getCloneDir(cloneDirPath, payload) {
+  if (!cloneDirPath &amp;&amp; payload) {
+    return `./${payload.repository.name}`;
+  }
+  return cloneDirPath;
+}
+
+
+/**
+ * execute
+ *
+ * @param {Object} args cli arguments
+ */
+function execute(args) {
+  const [notifier] = args._;
+  const payload = getPayload(args.payload);
+  const opts = {
+    payload,
+    repository: args.repository,
+    cloneDir: getCloneDir(args.cloneDir, payload),
+    maxLength: args.maxMessageLength,
+    dryRun: args.dryRun
+  };
+  const ghwn = new GitHubWikiNotifier(notifier);
+  ghwn.notify(opts)
+    .then(result =&gt; {
+      if (!result) {
+        console.log(chalk.bold(&apos;Nothing content for notification&apos;));
+      } else if (result.status === &apos;success&apos;) {
+        if (args.outputMessage) {
+          console.log(result.message);
+        }
+        console.log(chalk.bold.green(`Success notify to ${notifier}`));
+      }
+      process.exit();
+    })
+    .catch(e =&gt; {
+      console.error(chalk.bold.red(e));
+      process.exit(1);
+    });
+}
+
+try {
+  execute(argv);
+} catch (e) {
+  console.error(chalk.bold.red(e));
+  process.exit(1);
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.0)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
