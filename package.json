@@ -32,7 +32,17 @@
     "lib"
   ],
   "homepage": "https://github.com/moqada/github-wiki-notifier#readme",
-  "keywords": [],
+  "keywords": [
+    "cli",
+    "console",
+    "github",
+    "githubwiki",
+    "hipchat",
+    "notifier",
+    "notify",
+    "terminal",
+    "wiki"
+  ],
   "license": "MIT",
   "main": "lib/index.js",
   "repository": {
