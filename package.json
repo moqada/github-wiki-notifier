@@ -1,0 +1,14 @@
+{
+  "name": "github-wiki-notifier",
+  "version": "0.0.0",
+  "description": "Execute github-wiki-notifier",
+  "author": "moqada <moqada@gmail.com>",
+  "devDependencies": {
+    "github-wiki-notifier": "^0.1.0"
+  },
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "notifier": "github-wiki-notifier hipchat"
+  }
+}
