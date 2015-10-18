@@ -109,10 +109,7 @@ export function getRepo(repoPath, {cloneDir} = {}) {
  */
 export function getDiff(repo, ...opts) {
   return new Promise((resolve, reject) =&gt; {
-    if (opts.length === 0) {
-      opts.push(&apos;HEAD~1&apos;);
-    }
-    repo.diff(opts, (err, diff) =&gt; {
+    repo.show(opts, (err, diff) =&gt; {
       if (err) {
         reject(err);
       } else {
@@ -132,7 +129,7 @@ export function getDiff(repo, ...opts) {
  */
 export function getDiffPages(repo, ...pages) {
   return Promise.all(pages.map(page =&gt; {
-    return getDiff(repo, `${page.sha}~1`).then(diff =&gt; ({page, diff}));
+    return getDiff(repo, `${page.sha}`, &apos;--format=%N&apos;).then(diff =&gt; ({page, diff}));
   }));
 }
 
