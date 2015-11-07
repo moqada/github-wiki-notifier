@@ -61,7 +61,6 @@ More detail, See [Doc](https://moqada.github.io/github-wiki-notifier/).
 ### HipChat
 
 - (require) `GHWIKINOTIFIER_HIPCHAT_ROOM`: Hipchat Room ID
-- (require) `GHWIKINOTIFIER_HIPCHAT_TOKEN`: HipChat Admin token
 - (require) `GHWIKINOTIFIER_HIPCHAT_ROOM_TOKEN`: HipChat notify token
 
 
