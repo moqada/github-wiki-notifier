@@ -1,4 +1,4 @@
-import Hipchatter from 'hipchatter';
+import HipchatNotify from 'hipchat-notify';
 
 import HTMLFormatter from '../formatters/HTMLFormatter';
 import * as env from '../utils/env';
@@ -22,11 +22,10 @@ export default class HipChatNotifier {
    * @param {Object} [opts] options
    */
   constructor(opts = {}) {
-    this.room = opts.room || env.get('HIPCHAT_ROOM');
-    this.token = opts.token || env.get('HIPCHAT_TOKEN');
-    this.roomToken = opts.token || env.get('HIPCHAT_ROOM_TOKEN');
+    const room = opts.room || env.get('HIPCHAT_ROOM');
+    const roomToken = opts.token || env.get('HIPCHAT_ROOM_TOKEN');
     this.maxLength = 10000;
-    this.hipchatter = new Hipchatter(this.token);
+    this.hipchatNotify = new HipchatNotify(room, roomToken);
   }
 
   get service() {
@@ -51,11 +50,7 @@ export default class HipChatNotifier {
       return new Promise(resolve => resolve(result));
     }
     return new Promise((resolve, reject) => {
-      this.hipchatter.notify(this.room, {
-        message,
-        token: this.roomToken,
-        notify: true
-      }, err => {
+      this.hipchatNotify.info({message}, err => {
         if (err) {
           reject(err);
         } else {
