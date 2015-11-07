@@ -671,7 +671,7 @@
     "access": null,
     "description": null,
     "lineNumber": 1,
-    "content": "import Hipchatter from 'hipchatter';\n\nimport HTMLFormatter from '../formatters/HTMLFormatter';\nimport * as env from '../utils/env';\n\n\n/**\n * Notify to HipChat\n *\n * @param {Object[]|string[]} diffs diff list\n * @param {Object|string} repository repository object in GitHub Webhook payload\n * @param {Object} [user] sender object in GitHub Webhook payload\n * @param {number} [maxLength] repository object in GitHub Webhook payload\n * @param {Object} [opts] options\n * @return {Promise}\n */\nexport default class HipChatNotifier {\n\n  /**\n   * Constructor\n   *\n   * @param {Object} [opts] options\n   */\n  constructor(opts = {}) {\n    this.room = opts.room || env.get('HIPCHAT_ROOM');\n    this.token = opts.token || env.get('HIPCHAT_TOKEN');\n    this.roomToken = opts.token || env.get('HIPCHAT_ROOM_TOKEN');\n    this.maxLength = 10000;\n    this.hipchatter = new Hipchatter(this.token);\n  }\n\n  get service() {\n    return 'HipChat';\n  }\n\n  /**\n   * Send message\n   *\n   * @param {Object[]|string[]} diffs diff list\n   * @param {Object|string} repository repository object in GitHub Webhook payload\n   * @param {Object} [user] sender object in GitHub Webhook payload\n   * @param {number} [maxLength] repository object in GitHub Webhook payload\n   * @param {boolean} [dryRun] a flag for disable sending\n   * @return {Promise}\n   */\n  notify(diffs, repository, {user, maxLength, dryRun} = {}) {\n    const message = new HTMLFormatter(maxLength || this.maxLength)\n      .createMessage(diffs, repository, {user});\n    const result = {message, status: 'success'};\n    if (dryRun) {\n      return new Promise(resolve => resolve(result));\n    }\n    return new Promise((resolve, reject) => {\n      this.hipchatter.notify(this.room, {\n        message,\n        token: this.roomToken,\n        notify: true\n      }, err => {\n        if (err) {\n          reject(err);\n        } else {\n          resolve(result);\n        }\n      });\n    });\n  }\n}\n"
+    "content": "import HipchatNotify from 'hipchat-notify';\n\nimport HTMLFormatter from '../formatters/HTMLFormatter';\nimport * as env from '../utils/env';\n\n\n/**\n * Notify to HipChat\n *\n * @param {Object[]|string[]} diffs diff list\n * @param {Object|string} repository repository object in GitHub Webhook payload\n * @param {Object} [user] sender object in GitHub Webhook payload\n * @param {number} [maxLength] repository object in GitHub Webhook payload\n * @param {Object} [opts] options\n * @return {Promise}\n */\nexport default class HipChatNotifier {\n\n  /**\n   * Constructor\n   *\n   * @param {Object} [opts] options\n   */\n  constructor(opts = {}) {\n    const room = opts.room || env.get('HIPCHAT_ROOM');\n    const roomToken = opts.token || env.get('HIPCHAT_ROOM_TOKEN');\n    this.maxLength = 10000;\n    this.hipchatNotify = new HipchatNotify(room, roomToken);\n  }\n\n  get service() {\n    return 'HipChat';\n  }\n\n  /**\n   * Send message\n   *\n   * @param {Object[]|string[]} diffs diff list\n   * @param {Object|string} repository repository object in GitHub Webhook payload\n   * @param {Object} [user] sender object in GitHub Webhook payload\n   * @param {number} [maxLength] repository object in GitHub Webhook payload\n   * @param {boolean} [dryRun] a flag for disable sending\n   * @return {Promise}\n   */\n  notify(diffs, repository, {user, maxLength, dryRun} = {}) {\n    const message = new HTMLFormatter(maxLength || this.maxLength)\n      .createMessage(diffs, repository, {user});\n    const result = {message, status: 'success'};\n    if (dryRun) {\n      return new Promise(resolve => resolve(result));\n    }\n    return new Promise((resolve, reject) => {\n      this.hipchatNotify.info({message}, err => {\n        if (err) {\n          reject(err);\n        } else {\n          resolve(result);\n        }\n      });\n    });\n  }\n}\n"
   },
   {
     "__docId__": 20,
@@ -781,16 +781,16 @@
     "kind": "member",
     "static": false,
     "variation": null,
-    "name": "room",
+    "name": "maxLength",
     "memberof": "src/notifiers/HipChatNotifier.js~HipChatNotifier",
-    "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier#room",
+    "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier#maxLength",
     "access": null,
     "description": null,
-    "lineNumber": 25,
+    "lineNumber": 27,
     "undocument": true,
     "type": {
       "types": [
-        "*"
+        "number"
       ]
     }
   },
@@ -799,12 +799,12 @@
     "kind": "member",
     "static": false,
     "variation": null,
-    "name": "token",
+    "name": "hipchatNotify",
     "memberof": "src/notifiers/HipChatNotifier.js~HipChatNotifier",
-    "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier#token",
+    "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier#hipchatNotify",
     "access": null,
     "description": null,
-    "lineNumber": 26,
+    "lineNumber": 28,
     "undocument": true,
     "type": {
       "types": [
@@ -814,60 +814,6 @@
   },
   {
     "__docId__": 24,
-    "kind": "member",
-    "static": false,
-    "variation": null,
-    "name": "roomToken",
-    "memberof": "src/notifiers/HipChatNotifier.js~HipChatNotifier",
-    "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier#roomToken",
-    "access": null,
-    "description": null,
-    "lineNumber": 27,
-    "undocument": true,
-    "type": {
-      "types": [
-        "*"
-      ]
-    }
-  },
-  {
-    "__docId__": 25,
-    "kind": "member",
-    "static": false,
-    "variation": null,
-    "name": "maxLength",
-    "memberof": "src/notifiers/HipChatNotifier.js~HipChatNotifier",
-    "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier#maxLength",
-    "access": null,
-    "description": null,
-    "lineNumber": 28,
-    "undocument": true,
-    "type": {
-      "types": [
-        "number"
-      ]
-    }
-  },
-  {
-    "__docId__": 26,
-    "kind": "member",
-    "static": false,
-    "variation": null,
-    "name": "hipchatter",
-    "memberof": "src/notifiers/HipChatNotifier.js~HipChatNotifier",
-    "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier#hipchatter",
-    "access": null,
-    "description": null,
-    "lineNumber": 29,
-    "undocument": true,
-    "type": {
-      "types": [
-        "*"
-      ]
-    }
-  },
-  {
-    "__docId__": 27,
     "kind": "get",
     "static": false,
     "variation": null,
@@ -876,7 +822,7 @@
     "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier#service",
     "access": null,
     "description": null,
-    "lineNumber": 32,
+    "lineNumber": 31,
     "undocument": true,
     "type": {
       "types": [
@@ -886,7 +832,7 @@
     "generator": false
   },
   {
-    "__docId__": 28,
+    "__docId__": 25,
     "kind": "method",
     "static": false,
     "variation": null,
@@ -895,7 +841,7 @@
     "longname": "src/notifiers/HipChatNotifier.js~HipChatNotifier#notify",
     "access": null,
     "description": "Send message",
-    "lineNumber": 46,
+    "lineNumber": 45,
     "params": [
       {
         "nullable": null,
@@ -961,7 +907,7 @@
     "generator": false
   },
   {
-    "__docId__": 29,
+    "__docId__": 26,
     "kind": "file",
     "static": true,
     "variation": null,
@@ -974,7 +920,7 @@
     "content": "import HipChatNotifier from './notifiers/HipChatNotifier';\n\nexport const hipchat = HipChatNotifier;\n"
   },
   {
-    "__docId__": 30,
+    "__docId__": 27,
     "kind": "variable",
     "static": true,
     "variation": null,
@@ -995,7 +941,7 @@
     }
   },
   {
-    "__docId__": 31,
+    "__docId__": 28,
     "kind": "file",
     "static": true,
     "variation": null,
@@ -1008,7 +954,7 @@
     "content": "import git from 'simple-git';\n\nimport * as env from './utils/env';\n\n\n/**\n * Clone Repository\n *\n * @param {string} repoPath repository path\n * @param {string} cloneDir local path for clone\n * @return {Promise}\n */\nexport function cloneRepo(repoPath, cloneDir) {\n  return new Promise((resolve, reject) => {\n    git().clone(repoPath, cloneDir, err => {\n      if (err) {\n        reject(err);\n      } else {\n        resolve({repo: git(cloneDir)});\n      }\n    });\n  });\n}\n\n\n/**\n * Get Repository name from remote path\n *\n * @param {string} repoPath repository path\n * @return {string}\n */\nexport function getRepoNameFromRemotePath(repoPath) {\n  return repoPath.split('/').slice(-1)[0].split('.git')[0];\n}\n\n\n/**\n * Get Repository\n *\n * @param {string} repoPath repository path\n * @param {string} cloneDir local path for clone\n * @return {Promise}\n */\nexport function getRepo(repoPath, {cloneDir} = {}) {\n  if (/^(?:(?:https?|ftps?|ssh|git|rsync):\\/\\/)/.test(repoPath)) {\n    return cloneRepo(repoPath, cloneDir || getRepoNameFromRemotePath(repoPath));\n  }\n  return new Promise(resolve => {\n    resolve({repo: git(repoPath)});\n  });\n}\n\n\n/**\n * Get Diff Strings\n *\n * @param {Object} repo repository object of simple-git\n * @param {String[]} opts diff options for Git command\n * @return {Promise}\n */\nexport function getDiff(repo, ...opts) {\n  return new Promise((resolve, reject) => {\n    repo.show(opts, (err, diff) => {\n      if (err) {\n        reject(err);\n      } else {\n        resolve(diff);\n      }\n    });\n  });\n}\n\n\n/**\n * Get Diff Strings for Pages\n *\n * @param {Object} repo repository object of simple-git\n * @param {Object[]} pages pages\n * @return {Promise}\n */\nexport function getDiffPages(repo, ...pages) {\n  return Promise.all(pages.map(page => {\n    return getDiff(repo, `${page.sha}`, '--format=%N').then(diff => ({page, diff}));\n  }));\n}\n\n\n/**\n * Get remote repository path from payload object\n *\n * @param {Object} [payload] GitHub Webhook payload\n * @return {string}\n */\nexport function getRepoPathFromPayload(payload) {\n  const repo = payload.repository;\n\n  /**\n   * @param {string} url repository path\n   * @return {string}\n   */\n  function replace(url) {\n    return url.replace(/\\.git$/, '.wiki.git');\n  }\n\n  if (!repo.private) {\n    return replace(repo.clone_url);\n  }\n  const token = env.get('GITHUB_TOKEN');\n  if (token) {\n    return replace(`https://${token}:@${repo.clone_url.split('https://')[0]}`);\n  }\n  return replace(repo.ssh_url);\n}\n"
   },
   {
-    "__docId__": 32,
+    "__docId__": 29,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -1054,7 +1000,7 @@
     "generator": false
   },
   {
-    "__docId__": 33,
+    "__docId__": 30,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -1090,7 +1036,7 @@
     "generator": false
   },
   {
-    "__docId__": 34,
+    "__docId__": 31,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -1136,7 +1082,7 @@
     "generator": false
   },
   {
-    "__docId__": 35,
+    "__docId__": 32,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -1182,7 +1128,7 @@
     "generator": false
   },
   {
-    "__docId__": 36,
+    "__docId__": 33,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -1228,7 +1174,7 @@
     "generator": false
   },
   {
-    "__docId__": 37,
+    "__docId__": 34,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -1264,7 +1210,7 @@
     "generator": false
   },
   {
-    "__docId__": 38,
+    "__docId__": 35,
     "kind": "file",
     "static": true,
     "variation": null,
@@ -1277,7 +1223,7 @@
     "content": "const PREFIX = 'GHWIKINOTIFIER_';\n\n/**\n * Get environment variables\n *\n * @param {string} name variable name\n * @return {string|undefined}\n */\nexport function get(name) {\n  return process.env[`${PREFIX}${name}`];\n}\n"
   },
   {
-    "__docId__": 39,
+    "__docId__": 36,
     "kind": "variable",
     "static": true,
     "variation": null,
@@ -1298,7 +1244,7 @@
     }
   },
   {
-    "__docId__": 40,
+    "__docId__": 37,
     "kind": "function",
     "static": true,
     "variation": null,
@@ -1335,7 +1281,7 @@
     "generator": false
   },
   {
-    "__docId__": 42,
+    "__docId__": 39,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1348,7 +1294,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 43,
+    "__docId__": 40,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1361,7 +1307,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 44,
+    "__docId__": 41,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1374,7 +1320,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 45,
+    "__docId__": 42,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1387,7 +1333,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 46,
+    "__docId__": 43,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1400,7 +1346,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 47,
+    "__docId__": 44,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1413,7 +1359,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 48,
+    "__docId__": 45,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1426,7 +1372,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 49,
+    "__docId__": 46,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1439,7 +1385,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 50,
+    "__docId__": 47,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1452,7 +1398,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 51,
+    "__docId__": 48,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1465,7 +1411,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 52,
+    "__docId__": 49,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1478,7 +1424,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 53,
+    "__docId__": 50,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1491,7 +1437,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 54,
+    "__docId__": 51,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1504,7 +1450,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 55,
+    "__docId__": 52,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1517,7 +1463,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 56,
+    "__docId__": 53,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1530,7 +1476,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 57,
+    "__docId__": 54,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1543,7 +1489,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 58,
+    "__docId__": 55,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1556,7 +1502,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 59,
+    "__docId__": 56,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1569,7 +1515,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 60,
+    "__docId__": 57,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1582,7 +1528,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 61,
+    "__docId__": 58,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1595,7 +1541,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 62,
+    "__docId__": 59,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1608,7 +1554,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 63,
+    "__docId__": 60,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1621,7 +1567,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 64,
+    "__docId__": 61,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1634,7 +1580,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 65,
+    "__docId__": 62,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1647,7 +1593,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 66,
+    "__docId__": 63,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1660,7 +1606,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 67,
+    "__docId__": 64,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1673,7 +1619,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 68,
+    "__docId__": 65,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1686,7 +1632,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 69,
+    "__docId__": 66,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1699,7 +1645,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 70,
+    "__docId__": 67,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1712,7 +1658,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 71,
+    "__docId__": 68,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1725,7 +1671,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 72,
+    "__docId__": 69,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1738,7 +1684,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 73,
+    "__docId__": 70,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1751,7 +1697,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 74,
+    "__docId__": 71,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1764,7 +1710,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 75,
+    "__docId__": 72,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1777,7 +1723,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 76,
+    "__docId__": 73,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1790,7 +1736,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 77,
+    "__docId__": 74,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1803,7 +1749,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 78,
+    "__docId__": 75,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1816,7 +1762,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 79,
+    "__docId__": 76,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1829,7 +1775,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 80,
+    "__docId__": 77,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1842,7 +1788,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 81,
+    "__docId__": 78,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1855,7 +1801,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 82,
+    "__docId__": 79,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1868,7 +1814,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 83,
+    "__docId__": 80,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1881,7 +1827,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 84,
+    "__docId__": 81,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1894,7 +1840,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 85,
+    "__docId__": 82,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1907,7 +1853,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 86,
+    "__docId__": 83,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1920,7 +1866,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 87,
+    "__docId__": 84,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1933,7 +1879,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 88,
+    "__docId__": 85,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1946,7 +1892,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 90,
+    "__docId__": 87,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1959,7 +1905,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 91,
+    "__docId__": 88,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1972,7 +1918,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 92,
+    "__docId__": 89,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1985,7 +1931,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 93,
+    "__docId__": 90,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -1998,7 +1944,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 94,
+    "__docId__": 91,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -2011,7 +1957,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 95,
+    "__docId__": 92,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -2024,7 +1970,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 96,
+    "__docId__": 93,
     "kind": "external",
     "static": true,
     "variation": null,
@@ -2037,7 +1983,20 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 97,
+    "__docId__": 94,
+    "kind": "external",
+    "static": true,
+    "variation": null,
+    "name": "AudioContext",
+    "externalLink": "https://developer.mozilla.org/en/docs/Web/API/AudioContext",
+    "memberof": "BuiltinExternal/WebAPIExternal.js",
+    "longname": "BuiltinExternal/WebAPIExternal.js~AudioContext",
+    "access": null,
+    "description": null,
+    "builtinExternal": true
+  },
+  {
+    "__docId__": 95,
     "kind": "testFile",
     "static": true,
     "variation": null,
@@ -2050,7 +2009,7 @@
     "content": "import assert from 'power-assert';\nimport lib from '../src';\n\ndescribe('github-wiki-notifier', () => {\n  it('is defined', () => {\n    assert(lib);\n  });\n});\n"
   },
   {
-    "__docId__": 98,
+    "__docId__": 96,
     "kind": "testDescribe",
     "static": true,
     "variation": null,
@@ -2064,7 +2023,7 @@
     "lineNumber": 4
   },
   {
-    "__docId__": 99,
+    "__docId__": 97,
     "kind": "testIt",
     "static": true,
     "variation": null,

@@ -348,6 +348,12 @@ window.esdocSearchIndex = [
     "external"
   ],
   [
+    "builtinexternal/webapiexternal.js~audiocontext",
+    "external/index.html",
+    "BuiltinExternal/WebAPIExternal.js~AudioContext",
+    "external"
+  ],
+  [
     "builtinexternal/webapiexternal.js~canvasrenderingcontext2d",
     "external/index.html",
     "BuiltinExternal/WebAPIExternal.js~CanvasRenderingContext2D",
@@ -498,9 +504,9 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
-    "src/notifiers/hipchatnotifier.js~hipchatnotifier#hipchatter",
-    "class/src/notifiers/HipChatNotifier.js~HipChatNotifier.html#instance-member-hipchatter",
-    "src/notifiers/HipChatNotifier.js~HipChatNotifier#hipchatter",
+    "src/notifiers/hipchatnotifier.js~hipchatnotifier#hipchatnotify",
+    "class/src/notifiers/HipChatNotifier.js~HipChatNotifier.html#instance-member-hipchatNotify",
+    "src/notifiers/HipChatNotifier.js~HipChatNotifier#hipchatNotify",
     "member"
   ],
   [
@@ -516,27 +522,9 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
-    "src/notifiers/hipchatnotifier.js~hipchatnotifier#room",
-    "class/src/notifiers/HipChatNotifier.js~HipChatNotifier.html#instance-member-room",
-    "src/notifiers/HipChatNotifier.js~HipChatNotifier#room",
-    "member"
-  ],
-  [
-    "src/notifiers/hipchatnotifier.js~hipchatnotifier#roomtoken",
-    "class/src/notifiers/HipChatNotifier.js~HipChatNotifier.html#instance-member-roomToken",
-    "src/notifiers/HipChatNotifier.js~HipChatNotifier#roomToken",
-    "member"
-  ],
-  [
     "src/notifiers/hipchatnotifier.js~hipchatnotifier#service",
     "class/src/notifiers/HipChatNotifier.js~HipChatNotifier.html#instance-get-service",
     "src/notifiers/HipChatNotifier.js~HipChatNotifier#service",
-    "member"
-  ],
-  [
-    "src/notifiers/hipchatnotifier.js~hipchatnotifier#token",
-    "class/src/notifiers/HipChatNotifier.js~HipChatNotifier.html#instance-member-token",
-    "src/notifiers/HipChatNotifier.js~HipChatNotifier#token",
     "member"
   ],
   [
