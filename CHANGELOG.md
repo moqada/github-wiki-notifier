@@ -1,3 +1,12 @@
+<a name="0.1.3"></a>
+## [0.1.3](https://github.com/moqada/github-wiki-notifier/compare/v0.1.2...v0.1.3) (2015-12-20)
+
+
+- Babel 6 support ([#23](https://github.com/moqada/github-wiki-notifier/pull/23))
+- Update dependencies ([#26](https://github.com/moqada/github-wiki-notifier/pull/26))
+
+
+
 <a name="0.1.2"></a>
 ## [0.1.2](https://github.com/moqada/github-wiki-notifier/compare/v0.1.1...v0.1.2) (2015-11-07)
 
