@@ -28,6 +28,9 @@ export default class HipChatNotifier {
     this.hipchatNotify = new HipchatNotify(room, roomToken);
   }
 
+  /**
+   * service name getter
+   */
   get service() {
     return 'HipChat';
   }
