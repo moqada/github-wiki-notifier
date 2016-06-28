@@ -55,7 +55,7 @@ export function getRepo(repoPath, {cloneDir} = {}) {
  * Get Diff Strings
  *
  * @param {Object} repo repository object of simple-git
- * @param {String[]} opts diff options for Git command
+ * @param {string[]} opts diff options for Git command
  * @return {Promise}
  */
 export function getDiff(repo, ...opts) {

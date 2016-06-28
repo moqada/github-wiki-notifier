@@ -1,8 +1,16 @@
 import escapeHtml from 'escape-html';
 
 
+/**
+ * HTMLFomatter
+ */
 export default class HTMLFomatter {
 
+  /**
+   * constructor
+   *
+   * @param {number} maxLength max words length
+   */
   constructor(maxLength) {
     this.maxLength = maxLength;
   }
